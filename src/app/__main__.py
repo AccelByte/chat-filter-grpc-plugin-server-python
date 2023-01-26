@@ -13,12 +13,7 @@ from typing import Optional
 
 from environs import Env
 
-from accelbyte_py_sdk import AccelByteSDK
-from accelbyte_py_sdk.core import MyConfigRepository, InMemoryTokenRepository
-from accelbyte_py_sdk.token_validation.caching import CachingTokenValidator
-
 from app.proto.filterService_pb2_grpc import add_FilterServiceServicer_to_server
-from app.proto.filterService_pb2 import DESCRIPTOR as FILTER_SERVICE_DESCRIPTOR
 
 from accelbyte_grpc_plugin import App, AppGRPCInterceptorOpt, AppGRPCServiceOpt
 from accelbyte_grpc_plugin.interceptors.authorization import (
@@ -30,6 +25,7 @@ from accelbyte_grpc_plugin.interceptors.logging import (
 from accelbyte_grpc_plugin.interceptors.metrics import (
     MetricsServerInterceptor,
 )
+from accelbyte_grpc_plugin.opts.grpc_health_checking import GRPCHealthCheckingOpt
 from accelbyte_grpc_plugin.opts.grpc_reflection import GRPCReflectionOpt
 from accelbyte_grpc_plugin.opts.loki import LokiOpt
 from accelbyte_grpc_plugin.opts.prometheus import PrometheusOpt
@@ -75,6 +71,8 @@ async def main(port: int, profanities_file: Optional[str] = None, **kwargs) -> N
             opts.append(LokiOpt())
         if env.bool("PROMETHEUS", True):
             opts.append(PrometheusOpt())
+        if env.bool("HEALTH_CHECKING", True):
+            opts.append(GRPCHealthCheckingOpt())
         if env.bool("REFLECTION", True):
             opts.append(GRPCReflectionOpt())
         if env.bool("ZIPKIN", True):
@@ -82,6 +80,10 @@ async def main(port: int, profanities_file: Optional[str] = None, **kwargs) -> N
 
     with env.prefixed(prefix="PLUGIN_GRPC_SERVER_AUTH_"):
         if env.bool("ENABLED", False):
+            from accelbyte_py_sdk import AccelByteSDK
+            from accelbyte_py_sdk.core import MyConfigRepository, InMemoryTokenRepository
+            from accelbyte_py_sdk.token_validation.caching import CachingTokenValidator
+
             resource = env("RESOURCE", "ADMIN:NAMESPACE:{namespace}:CHAT:CONFIG")
             action = env.int("ACTION", int(PermissionAction.READ | PermissionAction.UPDATE))
 
