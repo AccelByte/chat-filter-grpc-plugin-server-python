@@ -397,3 +397,12 @@ $RECYCLE.BIN/
 *_pb2.py
 *_pb2.pyi
 *_pb2_grpc.py
+
+# Cache dir
+.cache/
+
+# Virtual Environments
+venv*/
+
+# Docker Compose .env file
+.env
