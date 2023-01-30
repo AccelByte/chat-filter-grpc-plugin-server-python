@@ -30,7 +30,7 @@ clean:
 	rm -f ${SOURCE_DIR}/${PROTO_DIR}/*_pb2_grpc.py
 
 proto: clean
-	docker run -t --rm -u $$(id -u):$$(id -g) -v $$(pwd):/data/ -w /data/ rvolosatovs/protoc:3.3.0 \
+	docker run -t --rm -u $$(id -u):$$(id -g) -v $$(pwd):/data/ -w /data/ rvolosatovs/protoc:4.0.0 \
 		--proto_path=${PROTO_DIR}=${SOURCE_DIR}/${PROTO_DIR} \
 		--python_out=${SOURCE_DIR} \
 		--grpc-python_out=${SOURCE_DIR} \
