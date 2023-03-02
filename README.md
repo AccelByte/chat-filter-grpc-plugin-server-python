@@ -8,19 +8,37 @@
 
     a. bash
   
-    b. docker
+    b. curl
+
+    c. docker
   
-    c. docker-compose v2
+    d. docker-compose v2.x
   
-    d. docker loki driver
+    e. docker loki driver
    
     ```
     docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
     ```
   
-    e. make
+    f. make
     
-    f. Python 3.9
+    g. Python 3.9
+
+    h. git
+
+    i. jq
+
+    j. [ngrok](https://ngrok.com/)
+
+    k. [postman](https://www.postman.com/)
+
+    l. [wscat](https://www.npmjs.com/package/wscat
+    
+2. A local copy of [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository.
+
+   ```
+   git clone https://github.com/AccelByte/grpc-plugin-dependencies.git
+   ```
 
 3. AccelByte Cloud demo environment.
 
@@ -82,48 +100,114 @@ docker-compose up --build
 
 ### Test Functionality in Local Development Environment
 
-The functionality of `gRPC server` methods can be tested in local development environment.
+The custom functions in this sample app can be tested locally using `postman`.
 
-1. Make sure `dependency services` are running. Please read `README.md` in the `grpc-plugin-dependencies` repository on how to run it.
+1. Start the `dependency services` by following the `README.md` in the [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository.
 
-2. Make sure this sample `gRPC server` is also up and running.
+   > :warning: **Make sure to start dependency services with mTLS disabled for now**: It is currently not supported by AccelByte Cloud but it will be enabled later on to improve security. If it is enabled, the gRPC client calls without mTLS will be rejected by Envoy proxy.
 
-3. Run the corresponding `gRPC client` as a stand in for the actual `gRPC client` in AccelByte Cloud, for example `chat-filter-grpc-plugin-client-go`.
+2. Start this `gRPC server` sample app.
 
-   a. Clone `chat-filter-grpc-plugin-client-go` repository. 
+3. Open `postman`, create a new `gRPC request`, and enter `localhost:10000` as server URL.
 
-   b. Follow the `README.md` inside to setup, build, and run it.
+   > :exclamation: We are essentially accessing the `gRPC server` through an `Envoy` proxy which is a part of `dependency services`.
 
-   c. Try it out! See the instruction in `README.md`.
+4. Still in `postman`, continue by selecting `FilterBulk` method and invoke it with the sample message below.
 
-> :exclamation: **Sample `gRPC server` and `gRPC client` does not have to be implemented in the same programming language**: As long as the gRPC proto is compatible, they should be able to communicate with each other.
+   ```json
+   {
+      "messages": [
+         {
+               "timestamp": "1675158486",
+               "userId": "fc9ccf985546435ba3af00a07d02e837",
+               "id": "d11c6eb58ca847009c9058189531af5f",
+               "message": "you are so good"
+         },
+         {
+               "timestamp": "1675158486",
+               "userId": "7b772495ac8d4400b6fc2a4154477d6e",
+               "id": "0e48058de6284b308536cf3c97b78546",
+               "message": "you are so bad"
+         }
+      ]
+   }
+   ```
+
+5. If successful, you will see in the response that the word `bad` will be filtered.
+
+   ```json
+   {
+      "data": [
+         {
+               "classification": [],
+               "cencoredWords": [],
+               "id": "d11c6eb58ca847009c9058189531af5f",
+               "timestamp": "1675158486",
+               "action": "PASS",
+               "message": "you are so good",
+               "referenceId": ""
+         },
+         {
+               "classification": [],
+               "cencoredWords": [
+                  "bad"
+               ],
+               "id": "0e48058de6284b308536cf3c97b78546",
+               "timestamp": "1675158565",
+               "action": "CENSORED",
+               "message": "you are so ***",
+               "referenceId": ""
+         }
+      ]
+   }
+   ```
 
 ### Test Integration with AccelByte Cloud
 
-After testing functionality in local development environment, to allow the actual `gRPC client` in AccelByte Cloud demo environment to access `gRPC server` in local development environment without requiring a public IP address, we can use [ngrok](https://ngrok.com/).
+After passing functional test in local development environment, you may want to perform
+integration test with `AccelByte Cloud`. Here, we are going to expose the `gRPC server`
+in local development environment to the internet so that it can be called by
+`AccelByte Cloud`. To do this without requiring public IP, we can use [ngrok](https://ngrok.com/)
 
-1. Make sure `dependency services` and this sample `gRPC server` are up and running.
+#### Prerequisites for macOS
 
-2. Sign-in/sign-up to [ngrok](https://ngrok.com/) and get your auth token in `ngrok` dashboard.
+```shell
+brew install coreutils
+PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+MANPATH="/usr/local/optcoreutils/libexec/gnuman:$MANPATH
+```
 
-3. In `grpc-plugin-dependencies` repository, run the following command to expose `gRPC server` Envoy proxy port in local development environment to the internet. Take a note of the `ngrok` forwarding URL e.g. `tcp://0.tcp.ap.ngrok.io:xxxxx`.
+---
+
+1. Start the `dependency services` by following the `README.md` in the [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository.
+
+   > :warning: **Make sure to start dependency services with mTLS disabled for now**: It is currently not supported by AccelByte Cloud but it will be enabled later on to improve security. If it is enabled, the gRPC client calls without mTLS will be rejected by Envoy proxy.
+
+2. Start this `gRPC server` sample app.
+
+3. Sign-in/sign-up to [ngrok](https://ngrok.com/) and get your auth token in `ngrok` dashboard.
+
+4. In [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository folder, run the following command to expose the `Envoy` proxy port connected to the `gRPC server` in local development environment to the internet. Take a note of the `ngrok` forwarding URL e.g. `tcp://0.tcp.ap.ngrok.io:xxxxx`.
 
    ```
-   make ngrok NGROK_AUTHTOKEN=xxxxxxxxxxx
+   make ngrok NGROK_AUTHTOKEN=xxxxxxxxxxx    # Use your ngrok auth token
    ```
 
-4. [Create an OAuth Client](https://docs.accelbyte.io/guides/access/iam-client.html) with confidential client type with the following permissions. Keep the `Client ID` and `Client Secret` for running the [demo.sh](demo.sh) script after this.
+5. [Create an OAuth Client](https://docs.accelbyte.io/guides/access/iam-client.html) with `confidential` client type with the following permissions. Keep the `Client ID` and `Client Secret`. This is different from the Oauth Client from the Setup section and it is required by [demo.sh](demo.sh) script after this register the `gRPC Server` URL and also to create and delete test users.
 
    - ADMIN:NAMESPACE:{namespace}:CHAT:CONFIG - READ, UPDATE
+   - ADMIN:NAMESPACE:{namespace}:INFORMATION:USER:* - DELETE
+
+   > :warning: **Oauth Client created in this step is different from the one from Setup section:** It is required by [demo.sh](demo.sh) script in the next step to register the `gRPC Server` URL and also to create and delete test users.
    
-5. Run the [demo.sh](demo.sh) script to run user chat simulation which calls this sample `gRPC server` using the `Client ID` and `Client Secret` created in the previous step. The script will setup the necessary configuration and then give you instructions on how to send and receive chat using `wscat` and if it contains the word `bad`, it should get filtered.
+6. Set the necessary environment variables and run the [demo.sh](demo.sh) script. The script will setup the necessary configuration and then give you instructions on how to send and receive chat using `wscat` between test users. If successful, the word `bad` in any chat will be filtered.
 
    ```
    export AB_BASE_URL='https://demo.accelbyte.io'
-   export AB_CLIENT_ID='xxxxxxxxxx'
-   export AB_CLIENT_SECRET='xxxxxxxxxx'
-   export AB_NAMESPACE='accelbyte'
-   export NGROK_URL='tcp://0.tcp.ap.ngrok.io:xxxxx'
+   export AB_CLIENT_ID='xxxxxxxxxx'       # Use Client ID from the previous step
+   export AB_CLIENT_SECRET='xxxxxxxxxx'   # Use Client secret from the previous step
+   export AB_NAMESPACE='xxxxxxxxxx'       # Use your Namespace ID
+   export GRPC_SERVER_URL='tcp://0.tcp.ap.ngrok.io:xxxxx'   # Use your ngrok forwarding URL
    bash demo.sh
    ```
  
