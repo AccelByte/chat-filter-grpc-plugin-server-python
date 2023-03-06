@@ -1,6 +1,6 @@
 # chat-filter-grpc-plugin-server-python
 
-> :warning: **If you are new to AccelByte Cloud Service Customization gRPC Plugin Architecture**: Start reading from `OVERVIEW.md` in `grpc-plugin-dependencies` repository to get the full context.
+> :warning: **If you are new to AccelByte Gaming Services Service Customization gRPC Plugin Architecture**: Start reading from `OVERVIEW.md` in `grpc-plugin-dependencies` repository to get the full context.
 
 ## Prerequisites
 
@@ -40,7 +40,7 @@
    git clone https://github.com/AccelByte/grpc-plugin-dependencies.git
    ```
 
-3. AccelByte Cloud demo environment.
+3. AccelByte Gaming Services demo environment.
 
     a. Base URL: https://demo.accelbyte.io.
 
@@ -104,7 +104,7 @@ The custom functions in this sample app can be tested locally using `postman`.
 
 1. Start the `dependency services` by following the `README.md` in the [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository.
 
-   > :warning: **Make sure to start dependency services with mTLS disabled for now**: It is currently not supported by AccelByte Cloud but it will be enabled later on to improve security. If it is enabled, the gRPC client calls without mTLS will be rejected by Envoy proxy.
+   > :warning: **Make sure to start dependency services with mTLS disabled for now**: It is currently not supported by AccelByte Gaming Services but it will be enabled later on to improve security. If it is enabled, the gRPC client calls without mTLS will be rejected by Envoy proxy.
 
 2. Start this `gRPC server` sample app.
 
@@ -162,12 +162,12 @@ The custom functions in this sample app can be tested locally using `postman`.
    }
    ```
 
-### Test Integration with AccelByte Cloud
+### Test Integration with AccelByte Gaming Services
 
 After passing functional test in local development environment, you may want to perform
-integration test with `AccelByte Cloud`. Here, we are going to expose the `gRPC server`
+integration test with `AccelByte Gaming Services`. Here, we are going to expose the `gRPC server`
 in local development environment to the internet so that it can be called by
-`AccelByte Cloud`. To do this without requiring public IP, we can use [ngrok](https://ngrok.com/)
+`AccelByte Gaming Services`. To do this without requiring public IP, we can use [ngrok](https://ngrok.com/)
 
 #### Prerequisites for macOS
 
@@ -181,7 +181,7 @@ MANPATH="/usr/local/optcoreutils/libexec/gnuman:$MANPATH
 
 1. Start the `dependency services` by following the `README.md` in the [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository.
 
-   > :warning: **Make sure to start dependency services with mTLS disabled for now**: It is currently not supported by AccelByte Cloud but it will be enabled later on to improve security. If it is enabled, the gRPC client calls without mTLS will be rejected by Envoy proxy.
+   > :warning: **Make sure to start dependency services with mTLS disabled for now**: It is currently not supported by AccelByte Gaming Services but it will be enabled later on to improve security. If it is enabled, the gRPC client calls without mTLS will be rejected by Envoy proxy.
 
 2. Start this `gRPC server` sample app.
 
