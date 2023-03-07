@@ -1,6 +1,31 @@
 # chat-filter-grpc-plugin-server-python
 
-> :warning: **If you are new to AccelByte Gaming Services Service Customization gRPC Plugin Architecture**: Start reading from `OVERVIEW.md` in `grpc-plugin-dependencies` repository to get the full context.
+```mermaid
+flowchart LR
+   subgraph AccelByte Gaming Services
+   CL[gRPC Client]
+   end
+   subgraph gRPC Server Deployment
+   SV["gRPC Server\n(YOU ARE HERE)"]
+   DS[Dependency Services]
+   CL --- DS
+   end
+   DS --- SV
+```
+
+`AccelByte Gaming Services` capabilities can be extended using custom functions implemented in a `gRPC server`. If configured, custom functions in the `gRPC server` will be called by `AccelByte Gaming Services` instead of the default function.
+
+The `gRPC server` and the `gRPC client` can actually communicate directly. However, additional services are necessary to provide **security**, **reliability**, **scalability**, and **observability**. We call these services as `dependency services`. The [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository is provided as an example of what these `dependency services` may look like. It
+contains a docker compose which consists of these `dependency services`.
+
+> :warning: **grpc-plugin-dependencies is provided as example for local development purpose only:** The dependency services in the actual gRPC server deployment may not be exactly the same.
+
+## Overview
+
+This repository contains a `sample chat filter gRPC server app` written in `Python`. It provides a simple custom chat filtering function for chat service in AccelByte Gaming Services. It will filter certain words in chat which have been listed to be filtered.  
+
+This sample app also shows how this `gRPC server` can be instrumented for better observability. 
+It is configured by default to send metrics, traces, and logs to the observability `dependency services` in [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies).
 
 ## Prerequisites
 
@@ -22,7 +47,7 @@
   
     f. make
     
-    g. Python 3.9
+    g. Python v3.9
 
     h. git
 
@@ -32,7 +57,7 @@
 
     k. [postman](https://www.postman.com/)
 
-    l. [wscat](https://www.npmjs.com/package/wscat
+    l. [wscat](https://www.npmjs.com/package/wscat)
     
 2. A local copy of [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository.
 
@@ -50,39 +75,43 @@
 
 ## Setup
 
-Create a docker compose `.env` file based on `.env.template` file and fill in the required environment variables in `.env` file.
+To be able to run this sample app, you will need to follow these setup steps.
 
-```
-AB_BASE_URL=https://demo.accelbyte.io      # Base URL
-AB_SECURITY_CLIENT_ID=xxxxxxxxxx           # Client ID
-AB_SECURITY_CLIENT_SECRET=xxxxxxxxxx       # Client secret
-AB_NAMESPACE=xxxxxxxxxx                    # Namespace ID
-PLUGIN_GRPC_SERVER_AUTH_ENABLED=false      # Enable/disable permission authorization
-```
+1. Create a docker compose `.env` file by copying the content of [.env.template](.env.template) file. 
+2. Fill in the required environment variables in `.env` file as shown below.
 
-> :exclamation: **For the server and client**: 
-> 1. Use the same Base URL, Client ID, Client Secret, and Namespace ID.
-> 2. Use the same permission authorization configuration, whether it is enabled or disabled.
+   ```
+   AB_BASE_URL=https://demo.accelbyte.io      # Base URL of AccelByte Gaming Services demo environment
+   AB_CLIENT_ID='xxxxxxxxxx'                  # Use Client ID from the Setup section
+   AB_CLIENT_SECRET='xxxxxxxxxx'              # Use Client Secret from the Setup section
+   AB_NAMESPACE='xxxxxxxxxx'                  # Use Namespace ID from the Setup section
+   PLUGIN_GRPC_SERVER_AUTH_ENABLED=false      # Enable or disable access token and permission verification
+   ```
+
+   > :warning: **Keep PLUGIN_GRPC_SERVER_AUTH_ENABLED=false for now**: It is currently not
+   supported by AccelByte Gaming Services but it will be enabled later on to improve security. If it is
+   enabled, the gRPC server will reject any calls from gRPC clients without proper authorization
+   metadata.
 
 ## Building
 
-To build the application, use the following command.
+To build this sample app, use the following command.
 
 ```
 make build
 ```
 
-To build and create a docker image of the application, use the following command.
+To build and create a docker image of this sample app, use the following command.
 
 ```
 make image
 ```
 
-For more details about the command, see [Makefile](Makefile).
+For more details about these commands, see [Makefile](Makefile).
 
 ## Running
 
-To run the docker image of the application which has been created beforehand, use the following command.
+To run the existing docker image of this sample app which has been built before, use the following command.
 
 ```
 docker-compose up
@@ -90,7 +119,7 @@ docker-compose up
 
 OR
 
-To build, create a docker image, and run the application in one go, use the following command.
+To build, create a docker image, and run the this sample app in one go, use the following command.
 
 ```
 docker-compose up --build
@@ -168,16 +197,6 @@ After passing functional test in local development environment, you may want to 
 integration test with `AccelByte Gaming Services`. Here, we are going to expose the `gRPC server`
 in local development environment to the internet so that it can be called by
 `AccelByte Gaming Services`. To do this without requiring public IP, we can use [ngrok](https://ngrok.com/)
-
-#### Prerequisites for macOS
-
-```shell
-brew install coreutils
-PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
-MANPATH="/usr/local/optcoreutils/libexec/gnuman:$MANPATH
-```
-
----
 
 1. Start the `dependency services` by following the `README.md` in the [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository.
 
