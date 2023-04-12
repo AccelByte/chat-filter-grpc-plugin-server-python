@@ -7,6 +7,7 @@ VENV_DIR = venv
 VENV_DEV_DIR = venv-dev
 
 IMAGE_NAME := $(shell basename "$$(pwd)")-app
+BUILDER := grpc-plugin-server-builder
 
 setup:
 	rm -rf ${VENV_DEV_DIR}
@@ -42,11 +43,16 @@ image:
 	docker buildx build -t ${IMAGE_NAME} --load .
 
 imagex:
-	docker buildx inspect ${IMAGE_NAME}-builder \
-			|| docker buildx create --name ${IMAGE_NAME}-builder --use
+	docker buildx inspect $(BUILDER) || docker buildx create --name $(BUILDER) --use
 	docker buildx build -t ${IMAGE_NAME} --platform linux/arm64/v8,linux/amd64 .
 	docker buildx build -t ${IMAGE_NAME} --load .
-	#docker buildx rm ${IMAGE_NAME}-builder
+	docker buildx rm --keep-state $(BUILDER)
+
+imagex_push:
+	@test -n "$(IMAGE_VERSION)" || (echo "IMAGE_VERSION is not set"; exit 1)
+	docker buildx inspect $(BUILDER) || docker buildx create --name $(BUILDER) --use
+	docker buildx build -t ${IMAGE_PREFIX}${IMAGE_NAME}:${IMAGE_VERSION} --platform linux/arm64/v8,linux/amd64 --push .
+	docker buildx rm --keep-state $(BUILDER)
 
 lint:
 	rm -f lint.err

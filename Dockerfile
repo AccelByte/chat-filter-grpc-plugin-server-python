@@ -2,7 +2,7 @@
 # This is licensed software from AccelByte Inc, for limitations
 # and restrictions contact your company contract manager.
 
-FROM --platform=$BUILDPLATFORM rvolosatovs/protoc:3.3.0 as proto
+FROM --platform=$BUILDPLATFORM rvolosatovs/protoc:4.0.0 as proto
 
 WORKDIR /build
 
