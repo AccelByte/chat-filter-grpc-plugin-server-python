@@ -35,7 +35,7 @@ It is configured by default to send metrics, traces, and logs to the observabili
   
     b. curl
 
-    c. docker
+    c. docker v23.x
   
     d. docker-compose v2.x
   
@@ -137,7 +137,7 @@ The custom functions in this sample app can be tested locally using `postman`.
 
 2. Start this `gRPC server` sample app.
 
-3. Open `postman`, create a new `gRPC request`, and enter `localhost:10000` as server URL.
+3. Open `postman`, create a new `gRPC request` (tutorial [here](https://blog.postman.com/postman-now-supports-grpc/)), and enter `localhost:10000` as server URL.
 
    > :exclamation: We are essentially accessing the `gRPC server` through an `Envoy` proxy which is a part of `dependency services`.
 
