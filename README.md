@@ -22,7 +22,7 @@ contains a docker compose which consists of these `dependency services`.
 
 ## Overview
 
-This repository contains a `sample chat filter gRPC server app` written in `Python`. It provides a simple custom chat filtering function for chat service in AccelByte Gaming Services. It will filter certain words in chat which have been listed to be filtered.  
+This repository contains a `sample chat filter gRPC server app` written in `Python`. It provides a simple custom chat filtering function for chat service in `AccelByte Gaming Services`. It will filter certain words in chat which have been listed to be filtered.  
 
 This sample app also shows how this `gRPC server` can be instrumented for better observability. 
 It is configured by default to send metrics, traces, and logs to the observability `dependency services` in [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies).
@@ -41,9 +41,9 @@ It is configured by default to send metrics, traces, and logs to the observabili
   
     e. docker loki driver
    
-    ```
-    docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
-    ```
+      ```
+      docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+      ```
   
     f. make
     
@@ -71,7 +71,9 @@ It is configured by default to send metrics, traces, and logs to the observabili
 
     b. [Create a Game Namespace](https://docs.accelbyte.io/esg/uam/namespaces.html#tutorials) if you don't have one yet. Keep the `Namespace ID`.
 
-    c. [Create an OAuth Client](https://docs.accelbyte.io/guides/access/iam-client.html) with confidential client type. If you want to enable permission authorization, give it `read` permission to resource `NAMESPACE:{namespace}:CHATGRPCSERVICE`. Keep the `Client ID` and `Client Secret`.
+    c. [Create an OAuth Client](https://docs.accelbyte.io/guides/access/iam-client.html) with `confidential` client type. Keep the `Client ID` and `Client Secret`.
+
+      - NAMESPACE:{namespace}:CHATGRPCSERVICE [READ]
 
 ## Setup
 
@@ -82,9 +84,9 @@ To be able to run this sample app, you will need to follow these setup steps.
 
    ```
    AB_BASE_URL=https://demo.accelbyte.io      # Base URL of AccelByte Gaming Services demo environment
-   AB_CLIENT_ID='xxxxxxxxxx'                  # Use Client ID from the Setup section
-   AB_CLIENT_SECRET='xxxxxxxxxx'              # Use Client Secret from the Setup section
-   AB_NAMESPACE='xxxxxxxxxx'                  # Use Namespace ID from the Setup section
+   AB_CLIENT_ID='xxxxxxxxxx'                  # Use Client ID from the Prerequisites section
+   AB_CLIENT_SECRET='xxxxxxxxxx'              # Use Client Secret from the Prerequisites section
+   AB_NAMESPACE='xxxxxxxxxx'                  # Use Namespace ID from the Prerequisites section
    PLUGIN_GRPC_SERVER_AUTH_ENABLED=false      # Enable or disable access token and permission verification
    ```
 
@@ -101,25 +103,9 @@ To build this sample app, use the following command.
 make build
 ```
 
-To build and create a docker image of this sample app, use the following command.
-
-```
-make image
-```
-
-For more details about these commands, see [Makefile](Makefile).
-
 ## Running
 
-To run the existing docker image of this sample app which has been built before, use the following command.
-
-```
-docker-compose up
-```
-
-OR
-
-To build, create a docker image, and run the this sample app in one go, use the following command.
+To (build and) run this sample app in a container, use the following command.
 
 ```
 docker-compose up --build
@@ -131,15 +117,15 @@ docker-compose up --build
 
 The custom functions in this sample app can be tested locally using `postman`.
 
-1. Start the `dependency services` by following the `README.md` in the [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository.
+1. Run the `dependency services` by following the `README.md` in the [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository.
 
-   > :warning: **Make sure to start dependency services with mTLS disabled for now**: It is currently not supported by AccelByte Gaming Services but it will be enabled later on to improve security. If it is enabled, the gRPC client calls without mTLS will be rejected by Envoy proxy.
+   > :warning: **Make sure to run dependency services with mTLS disabled for now**: It is currently not supported by AccelByte Gaming Services but it will be enabled later on to improve security. If it is enabled, the gRPC client calls without mTLS will be rejected.
 
-2. Start this `gRPC server` sample app.
+2. Run this `gRPC server` sample app.
 
 3. Open `postman`, create a new `gRPC request` (tutorial [here](https://blog.postman.com/postman-now-supports-grpc/)), and enter `localhost:10000` as server URL.
 
-   > :exclamation: We are essentially accessing the `gRPC server` through an `Envoy` proxy which is a part of `dependency services`.
+   > :exclamation: We are essentially accessing the `gRPC server` through an `Envoy` proxy in `dependency services`.
 
 4. Still in `postman`, continue by selecting `FilterBulk` method and invoke it with the sample message below.
 
@@ -198,11 +184,11 @@ integration test with `AccelByte Gaming Services`. Here, we are going to expose 
 in local development environment to the internet so that it can be called by
 `AccelByte Gaming Services`. To do this without requiring public IP, we can use [ngrok](https://ngrok.com/)
 
-1. Start the `dependency services` by following the `README.md` in the [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository.
+1. Run the `dependency services` by following the `README.md` in the [grpc-plugin-dependencies](https://github.com/AccelByte/grpc-plugin-dependencies) repository.
 
-   > :warning: **Make sure to start dependency services with mTLS disabled for now**: It is currently not supported by AccelByte Gaming Services but it will be enabled later on to improve security. If it is enabled, the gRPC client calls without mTLS will be rejected by Envoy proxy.
+   > :warning: **Make sure to run dependency services with mTLS disabled for now**: It is currently not supported by AccelByte Gaming Services but it will be enabled later on to improve security. If it is enabled, the gRPC client calls without mTLS will be rejected.
 
-2. Start this `gRPC server` sample app.
+2. Run this `gRPC server` sample app.
 
 3. Sign-in/sign-up to [ngrok](https://ngrok.com/) and get your auth token in `ngrok` dashboard.
 
@@ -212,12 +198,12 @@ in local development environment to the internet so that it can be called by
    make ngrok NGROK_AUTHTOKEN=xxxxxxxxxxx    # Use your ngrok auth token
    ```
 
-5. [Create an OAuth Client](https://docs.accelbyte.io/guides/access/iam-client.html) with `confidential` client type with the following permissions. Keep the `Client ID` and `Client Secret`. This is different from the Oauth Client from the Setup section and it is required by [demo.sh](demo.sh) script after this register the `gRPC Server` URL and also to create and delete test users.
+5. [Create an OAuth Client](https://docs.accelbyte.io/guides/access/iam-client.html) with `confidential` client type with the following permissions. Keep the `Client ID` and `Client Secret`.
 
    - ADMIN:NAMESPACE:{namespace}:CHAT:CONFIG - READ, UPDATE
    - ADMIN:NAMESPACE:{namespace}:INFORMATION:USER:* - DELETE
 
-   > :warning: **Oauth Client created in this step is different from the one from Setup section:** It is required by [demo.sh](demo.sh) script in the next step to register the `gRPC Server` URL and also to create and delete test users.
+   > :warning: **Oauth Client created in this step is different from the one from Prerequisites section:** It is required by [demo.sh](demo.sh) script in the next step to register the `gRPC Server` URL and also to create and delete test users.
    
 6. Set the necessary environment variables and run the [demo.sh](demo.sh) script. The script will setup the necessary configuration and then give you instructions on how to send and receive chat using `wscat` between test users. If successful, the word `bad` in any chat will be filtered.
 
@@ -232,14 +218,10 @@ in local development environment to the internet so that it can be called by
  
 > :warning: **Ngrok free plan has some limitations**: You may want to use paid plan if the traffic is high.
 
-## Advanced
+## Pushing
 
-### Building Multi-Arch Docker Image
-
-To create a multi-arch docker image of the project, use the following command.
+To build and push this sample app multi-arch container image to AWS ECR, use the following command.
 
 ```
-make imagex
+make imagex_push REPO_URL=xxxxxxxxxx.dkr.ecr.us-west-2.amazonaws.com/accelbyte/justice/development/extend/xxxxxxxxxx/xxxxxxxxxx IMAGE_TAG=v0.0.1
 ```
-
-For more details about the command, see [Makefile](Makefile).
