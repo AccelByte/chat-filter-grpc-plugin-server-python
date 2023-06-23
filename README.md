@@ -65,7 +65,7 @@ It is configured by default to send metrics, traces, and logs to the observabili
    git clone https://github.com/AccelByte/grpc-plugin-dependencies.git
    ```
 
-3. AccelByte Gaming Services demo environment.
+3. Access to `AccelByte Gaming Services` demo environment.
 
     a. Base URL: https://demo.accelbyte.io.
 
