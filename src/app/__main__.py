@@ -116,7 +116,8 @@ async def main(port: int, profanities_file: Optional[str] = None, **kwargs) -> N
     opts.append(
         AppGRPCServiceOpt(
             AsyncFilterService(
-                extra_profane_word_dictionaries=extra_profane_word_dictionaries
+                extra_profane_word_dictionaries=extra_profane_word_dictionaries,
+                logger=logger
             ),
             AsyncFilterService.full_name,
             add_FilterServiceServicer_to_server,

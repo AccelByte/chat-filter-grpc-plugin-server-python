@@ -2,10 +2,13 @@
 # This is licensed software from AccelByte Inc, for limitations
 # and restrictions contact your company contract manager.
 
+import json
+from logging import Logger
 from uuid import uuid4
 from typing import Collection, Dict, List, Optional
 
 import spacy
+from google.protobuf.json_format import MessageToDict
 from profanity_filter import ProfanityFilter
 
 from app.proto.filterService_pb2 import (
@@ -27,6 +30,7 @@ class AsyncFilterService(FilterServiceServicer):
         extra_profane_word_dictionaries: Optional[
             Dict[Optional[str], Collection[str]]
         ] = None,
+        logger : Optional[Logger] = None,
     ) -> None:
         languages = languages if languages else ["en"]
         for language in languages:
@@ -34,40 +38,39 @@ class AsyncFilterService(FilterServiceServicer):
 
         self.filter = ProfanityFilter()
         self.filter.extra_profane_word_dictionaries = extra_profane_word_dictionaries
+        self.logger = logger
 
     async def Check(self, request, context):
-        return HealthCheckResponse(status=HealthCheckResponse.ServingStatus.SERVING)
+        self.log_payload(f'{self.Check.__name__} request: %s', request)
+        response = HealthCheckResponse(status=HealthCheckResponse.ServingStatus.SERVING)
+        self.log_payload(f'{self.Check.__name__} response: %s', response)
+        return response
 
     async def FilterBulk(self, request, context):
-        data = [self.censor_chat_message(message) for message in request.messages]
-        return MessageBatchResult(data=data)
+        self.log_payload(f'{self.FilterBulk.__name__} request: %s', request)
+        data = [self.do_censor(message) for message in request.messages]
+        response = MessageBatchResult(data=data)
+        self.log_payload(f'{self.FilterBulk.__name__} response: %s', response)
+        return response
 
-    def censor_chat_message(self, chat_message: ChatMessage) -> MessageResult:
+    def do_censor(self, chat_message: ChatMessage) -> MessageResult:
         action: MessageResult.Action = MessageResult.Action.PASS
         classification: List[MessageResult.Classification] = []
         censored_words: List[str] = []
         message: str = chat_message.message
         reference_id: str = uuid4().hex
-
         censored_message = message
-
         if self.filter.is_profane(message):
             censored_message = self.filter.censor(message)
-
             # action
             action = MessageResult.Action.CENSORED
-
             # classification
             classification.append(MessageResult.Classification.OTHER)
-
             # censored_words
-            msgs = message.split()
-            cmsgs = censored_message.split()
-            if len(msgs) == len(cmsgs):
-                for i in range(len(msgs)):
-                    if msgs[i] != cmsgs[i]:
-                        censored_words.append(msgs[i])
-
+            words = message.split()
+            cwords = censored_message.split()
+            if len(words) == len(cwords):
+                censored_words = [words[i] for i in range(len(words)) if words[i] != cwords[i]]
         return MessageResult(
             id=chat_message.id,
             timestamp=chat_message.timestamp,
@@ -77,3 +80,10 @@ class AsyncFilterService(FilterServiceServicer):
             message=censored_message,
             referenceId=reference_id,
         )
+        
+    def log_payload(self, format : str, payload):
+        if not self.logger:
+            return
+        payload_dict = MessageToDict(payload, preserving_proto_field_name=True)
+        payload_json = json.dumps(payload_dict)
+        self.logger.info(format % payload_json)
