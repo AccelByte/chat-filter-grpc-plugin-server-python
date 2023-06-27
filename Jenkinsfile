@@ -69,7 +69,6 @@ pipeline {
         label "justice-codegen-sdk"
       }
       steps {
-        sh "make setup"
         sh "make build"
       }
     }
