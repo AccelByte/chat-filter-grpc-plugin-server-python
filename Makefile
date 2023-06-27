@@ -11,18 +11,16 @@ BUILDER := grpc-plugin-server-builder
 
 setup:
 	rm -rf ${VENV_DEV_DIR}
-	docker run --rm -t -u $$(id -u):$$(id -g) -v $$(pwd):/data -w /data -e PIP_CACHE_DIR=/data/.cache/pip --entrypoint /bin/sh python:3.9-slim \
-			-c 'python -m venv ${VENV_DEV_DIR} \
-					&& ${VENV_DEV_DIR}/${PIP_EXEC_PATH} install --upgrade pip \
-					&& ${VENV_DEV_DIR}/${PIP_EXEC_PATH} install -r requirements-dev.txt \
-					&& ${VENV_DEV_DIR}/${PYTHON_EXEC_PATH} -m spacy download en'
+	python3.9 -m venv ${VENV_DEV_DIR} \
+			&& ${VENV_DEV_DIR}/${PIP_EXEC_PATH} install --upgrade pip \
+			&& ${VENV_DEV_DIR}/${PIP_EXEC_PATH} install -r requirements-dev.txt \
+			&& ${VENV_DEV_DIR}/${PYTHON_EXEC_PATH} -m spacy download en
 
 	rm -rf ${VENV_DIR}
-	docker run --rm -t -u $$(id -u):$$(id -g) -v $$(pwd):/data -w /data -e PIP_CACHE_DIR=/data/.cache/pip --entrypoint /bin/sh python:3.9-slim \
-			-c 'python -m venv ${VENV_DIR} \
-					&& ${VENV_DIR}/${PIP_EXEC_PATH} install --upgrade pip \
-					&& ${VENV_DIR}/${PIP_EXEC_PATH} install -r requirements.txt \
-					&& ${VENV_DIR}/${PYTHON_EXEC_PATH} -m spacy download en'
+	python3.9 -m venv ${VENV_DEV_DIR} \
+			&& ${VENV_DIR}/${PIP_EXEC_PATH} install --upgrade pip \
+			&& ${VENV_DIR}/${PIP_EXEC_PATH} install -r requirements.txt \
+			&& ${VENV_DIR}/${PYTHON_EXEC_PATH} -m spacy download en
 
 clean:
 	rm -f ${SOURCE_DIR}/${PROTO_DIR}/*_grpc.py
